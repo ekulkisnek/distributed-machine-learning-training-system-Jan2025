@@ -59,7 +59,12 @@ def main():
     with col1:
         model_type = st.selectbox(
             "Select Model",
-            ["Linear Regression", "Ridge Regression", "Lasso Regression"]
+            ["Linear Regression", "Ridge Regression", "Lasso Regression"],
+            help="""
+            - Linear Regression: Basic linear model
+            - Ridge Regression: Reduces overfitting with L2 regularization
+            - Lasso Regression: Reduces overfitting with L1 regularization
+            """
         )
         
     with col2:
@@ -117,14 +122,23 @@ def main():
                     metrics = metrics_collector.get_latest_metrics()
                     speed_fig, resource_fig = create_metrics_charts(metrics)
                     
-                    # Update UI
+                    # Update UI with explanations and unique keys
                     progress_bar.progress((epoch + 1) / n_epochs)
+                    
                     with metrics_container:
                         st.write(f"Epoch {epoch + 1}/{n_epochs}")
                         st.write(f"Loss: {metrics['model_metrics'].get('mse', 0):.4f}")
+                        
+                        st.info("""
+                        **Training Progress Explanation:**
+                        - Progress Bar: Shows completion percentage of training
+                        - Loss: Mean Squared Error (MSE) - lower values indicate better model fit
+                        - Training Speed: Samples processed per second
+                        - Resource Usage: Memory and computation time per worker
+                        """)
                     
-                    speed_chart.plotly_chart(speed_fig)
-                    resource_chart.plotly_chart(resource_fig)
+                    speed_chart.plotly_chart(speed_fig, key=f"speed_chart_{epoch}")
+                    resource_chart.plotly_chart(resource_fig, key=f"resource_chart_{epoch}")
                     
             # Shutdown workers
             coordinator.shutdown()
