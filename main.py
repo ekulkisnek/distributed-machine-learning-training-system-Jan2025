@@ -141,10 +141,10 @@ def main():
                     gradients, avg_loss = coordinator.aggregate_gradients()
                     model.update_parameters(gradients, learning_rate)
                     
-                    # Update metrics with actual loss
-                    metrics['model_metrics'] = {'mse': avg_loss}
+                    # Update metrics collector with loss
+                    metrics_collector.update_model_metrics({'mse': avg_loss})
                     
-                    # Update metrics
+                    # Get latest metrics
                     metrics = metrics_collector.get_latest_metrics()
                     speed_fig, resource_fig = create_metrics_charts(metrics)
                     
