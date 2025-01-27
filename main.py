@@ -54,9 +54,11 @@ def main():
     
     # Top configuration section
     st.header("Training Configuration")
-    col1, col2, col3 = st.columns(3)
     
+    # Model configuration
+    col1, col2 = st.columns(2)
     with col1:
+        st.subheader("Model Settings")
         model_type = st.selectbox(
             "Select Model",
             ["Linear Regression", "Ridge Regression", "Lasso Regression"],
@@ -67,11 +69,32 @@ def main():
             """
         )
         
+        if model_type in ["Ridge Regression", "Lasso Regression"]:
+            regularization_strength = st.slider(
+                "Regularization Strength (α)",
+                0.0001, 10.0, 1.0, 
+                help="Controls the strength of regularization. Higher values = stronger regularization"
+            )
+    
+    # Training configuration
     with col2:
-        n_epochs = st.slider("Number of epochs", 1, 100, 10)
-        
-    with col3:
-        learning_rate = st.slider("Learning rate", 0.0001, 0.1, 0.01, format="%.4f")
+        st.subheader("Training Settings")
+        n_epochs = st.slider(
+            "Number of epochs", 
+            1, 100, 10,
+            help="Number of complete passes through the training data"
+        )
+        learning_rate = st.slider(
+            "Learning rate", 
+            0.0001, 0.1, 0.01, 
+            format="%.4f",
+            help="Step size for gradient updates. Lower values = more stable but slower training"
+        )
+        batch_size = st.slider(
+            "Batch Size",
+            8, 128, 32,
+            help="Number of samples processed together. Larger batches = faster but may need more memory"
+        )
     
     data_source = st.radio(
         "Data Source",
@@ -126,19 +149,25 @@ def main():
                     progress_bar.progress((epoch + 1) / n_epochs)
                     
                     with metrics_container:
-                        st.write(f"Epoch {epoch + 1}/{n_epochs}")
-                        st.write(f"Loss: {metrics['model_metrics'].get('mse', 0):.4f}")
-                        
-                        st.info("""
-                        **Training Progress Explanation:**
-                        - Progress Bar: Shows completion percentage of training
-                        - Loss: Mean Squared Error (MSE) - lower values indicate better model fit
-                        - Training Speed: Samples processed per second
-                        - Resource Usage: Memory and computation time per worker
-                        """)
-                    
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Epoch", f"{epoch + 1}/{n_epochs}")
+                        with col2:
+                            st.metric("Loss (MSE)", f"{metrics['model_metrics'].get('mse', 0):.4f}")
+                        with col3:
+                            st.metric("Training Speed", f"{metrics['training_speed']:.1f} samples/s")
+                            
                     speed_chart.plotly_chart(speed_fig, key=f"speed_chart_{epoch}")
                     resource_chart.plotly_chart(resource_fig, key=f"resource_chart_{epoch}")
+
+                # Show explanation only once at the start
+                if epoch == 0:
+                    st.info("""
+                    **Metrics Guide:**
+                    - Loss (MSE): Measures prediction error, lower is better
+                    - Training Speed: Data processing rate
+                    - Resource Usage: System utilization per worker
+                    """)
                     
             # Shutdown workers
             coordinator.shutdown()
