@@ -52,17 +52,40 @@ def main():
     # Initialize system components
     coordinator, data_pipeline, model, metrics_collector = initialize_system()
     
-    # Sidebar configuration
-    st.sidebar.header("Configuration")
-    n_epochs = st.sidebar.slider("Number of epochs", 1, 100, 10)
-    learning_rate = st.sidebar.slider("Learning rate", 0.0001, 0.1, 0.01)
+    # Top configuration section
+    st.header("Training Configuration")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        model_type = st.selectbox(
+            "Select Model",
+            ["Linear Regression", "Ridge Regression", "Lasso Regression"]
+        )
+        
+    with col2:
+        n_epochs = st.slider("Number of epochs", 1, 100, 10)
+        
+    with col3:
+        learning_rate = st.slider("Learning rate", 0.0001, 0.1, 0.01, format="%.4f")
+    
+    data_source = st.radio(
+        "Data Source",
+        ["Sample Data", "Upload Custom Data"],
+        horizontal=True
+    )
+    
+    if data_source == "Upload Custom Data":
+        uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+        data_path = uploaded_file if uploaded_file else "sample_data.csv"
+    else:
+        data_path = "sample_data.csv"
     
     # Main training interface
     if st.button("Start Training"):
         try:
             # Load and preprocess data
             with Timer("Data Loading"):
-                data = data_pipeline.load_data("data.csv")
+                data = data_pipeline.load_data(data_path)
                 processed_data = data_pipeline.preprocess_data(data)
                 
             # Initialize model
