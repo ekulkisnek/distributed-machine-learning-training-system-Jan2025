@@ -138,8 +138,11 @@ def main():
                     
                     # Training step
                     coordinator.broadcast_parameters(model.parameters)
-                    gradients = coordinator.aggregate_gradients()
+                    gradients, avg_loss = coordinator.aggregate_gradients()
                     model.update_parameters(gradients, learning_rate)
+                    
+                    # Update metrics with actual loss
+                    metrics['model_metrics'] = {'mse': avg_loss}
                     
                     # Update metrics
                     metrics = metrics_collector.get_latest_metrics()
