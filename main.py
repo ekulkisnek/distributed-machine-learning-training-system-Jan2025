@@ -86,7 +86,7 @@ def main():
         )
         learning_rate = st.slider(
             "Learning rate", 
-            0.0001, 0.1, 0.01, 
+            0.001, 0.5, 0.05, 
             format="%.4f",
             help="Step size for gradient updates. Lower values = more stable but slower training"
         )
